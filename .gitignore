@@ -1,1 +1,6 @@
 *.sdf
+*.swp
+*.opensdf
+Release/
+Debug/
+
