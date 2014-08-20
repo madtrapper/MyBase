@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/time/time.h"
-
 #include <limits>
 #include <ostream>
 
