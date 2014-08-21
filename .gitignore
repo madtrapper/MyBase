@@ -2,6 +2,6 @@
 *.swp
 *.opensdf
 *.suo
-Release/
-Debug/
+/Release/
+/Debug/
 
