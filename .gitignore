@@ -6,6 +6,7 @@
 *.idb
 *.obj
 *.tlog
+*.user
 /Release/
 /Debug/
 
