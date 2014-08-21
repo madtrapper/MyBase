@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 
 #if defined(OS_WIN)
 #include <io.h>
@@ -157,6 +157,7 @@ bool ReadFileToString(const FilePath& path,
 
     size += len;
   }
+  read_status = read_status && !ferror(file);
   CloseFile(file);
 
   return read_status;

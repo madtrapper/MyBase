@@ -32,15 +32,6 @@
     <ClInclude Include="threading\thread_local.h">
       <Filter>threading</Filter>
     </ClInclude>
-    <ClInclude Include="third_party\nspr\prtypes.h">
-      <Filter>third_party\nspr</Filter>
-    </ClInclude>
-    <ClInclude Include="third_party\nspr\prcpucfg.h">
-      <Filter>third_party\nspr</Filter>
-    </ClInclude>
-    <ClInclude Include="third_party\nspr\prcpucfg_win.h">
-      <Filter>third_party\nspr</Filter>
-    </ClInclude>
     <ClInclude Include="third_party\nspr\prtime.h">
       <Filter>third_party\nspr</Filter>
     </ClInclude>
@@ -239,9 +230,6 @@
     <ClInclude Include="message_loop\message_pump_dispatcher.h">
       <Filter>message_loop</Filter>
     </ClInclude>
-    <ClInclude Include="message_loop\message_pump_observer.h">
-      <Filter>message_loop</Filter>
-    </ClInclude>
     <ClInclude Include="win\scoped_handle.h">
       <Filter>win</Filter>
     </ClInclude>
@@ -348,7 +336,6 @@
       <Filter>files</Filter>
     </ClInclude>
     <ClInclude Include="scoped_generic.h" />
-    <ClInclude Include="platform_file.h" />
     <ClInclude Include="files\file_enumerator.h">
       <Filter>files</Filter>
     </ClInclude>
@@ -379,6 +366,16 @@
       <Filter>win</Filter>
     </ClInclude>
     <ClInclude Include="cpu.h" />
+    <ClInclude Include="files\file_util.h">
+      <Filter>files</Filter>
+    </ClInclude>
+    <ClInclude Include="sys_info_internal.h" />
+    <ClInclude Include="debug\task_annotator.h">
+      <Filter>debug</Filter>
+    </ClInclude>
+    <ClInclude Include="message_loop\timer_slack.h">
+      <Filter>message_loop</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="threading">
@@ -694,8 +691,6 @@
     <ClCompile Include="path_service.cc" />
     <ClCompile Include="base_paths.cc" />
     <ClCompile Include="base_paths_win.cc" />
-    <ClCompile Include="file_util_win.cc" />
-    <ClCompile Include="file_util.cc" />
     <ClCompile Include="files\file_win.cc">
       <Filter>files</Filter>
     </ClCompile>
@@ -705,8 +700,6 @@
     <ClCompile Include="files\scoped_file.cc">
       <Filter>files</Filter>
     </ClCompile>
-    <ClCompile Include="platform_file_win.cc" />
-    <ClCompile Include="platform_file.cc" />
     <ClCompile Include="files\file_enumerator_win.cc">
       <Filter>files</Filter>
     </ClCompile>
@@ -775,6 +768,16 @@
       <Filter>debug</Filter>
     </ClCompile>
     <ClCompile Include="debug\trace_event_impl_constants.cc">
+      <Filter>debug</Filter>
+    </ClCompile>
+    <ClCompile Include="files\file_util_win.cc">
+      <Filter>files</Filter>
+    </ClCompile>
+    <ClCompile Include="files\file_util.cc">
+      <Filter>files</Filter>
+    </ClCompile>
+    <ClCompile Include="sys_info_win.cc" />
+    <ClCompile Include="debug\task_annotator.cc">
       <Filter>debug</Filter>
     </ClCompile>
   </ItemGroup>

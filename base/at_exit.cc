@@ -12,6 +12,7 @@
 #include "base/logging.h"
 
 namespace base {
+
 // Keep a stack of registered AtExitManagers.  We always operate on the most
 // recent, and we should never have more than one outside of testing (for a
 // statically linked version of this library).  Testing may use the shadow

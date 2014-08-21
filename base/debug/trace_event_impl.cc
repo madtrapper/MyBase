@@ -58,9 +58,19 @@ namespace {
 // trace.
 const int kOverheadReportThresholdInMicroseconds = 50;
 
+// String options that can be used to initialize TraceOptions.
+const char kRecordUntilFull[] = "record-until-full";
+const char kRecordContinuously[] = "record-continuously";
+const char kRecordAsMuchAsPossible[] = "record-as-much-as-possible";
+const char kTraceToConsole[] = "trace-to-console";
+const char kEnableSampling[] = "enable-sampling";
+const char kEnableSystrace[] = "enable-systrace";
+
 // Controls the number of trace events we will buffer in-memory
 // before throwing them away.
 const size_t kTraceBufferChunkSize = TraceBufferChunk::kTraceBufferChunkSize;
+const size_t kTraceEventVectorBigBufferChunks =
+    512000000 / kTraceBufferChunkSize;
 const size_t kTraceEventVectorBufferChunks = 256000 / kTraceBufferChunkSize;
 const size_t kTraceEventRingBufferChunks = kTraceEventVectorBufferChunks / 4;
 const size_t kTraceEventBatchChunks = 1000 / kTraceBufferChunkSize;
@@ -102,7 +112,8 @@ const int g_category_categories_exhausted = 2;
 const int g_category_metadata = 3;
 const int g_category_trace_event_overhead = 4;
 const int g_num_builtin_categories = 5;
-int g_category_index = g_num_builtin_categories; // Skip default categories.
+// Skip default categories.
+base::subtle::AtomicWord g_category_index = g_num_builtin_categories;
 
 // The name of the current thread. This is used to decide if the current
 // thread name has changed. We combine all the seen thread names into the
@@ -288,10 +299,11 @@ class TraceBufferRingBuffer : public TraceBuffer {
 
 class TraceBufferVector : public TraceBuffer {
  public:
-  TraceBufferVector()
+  TraceBufferVector(size_t max_chunks)
       : in_flight_chunk_count_(0),
-        current_iteration_index_(0) {
-    chunks_.reserve(kTraceEventVectorBufferChunks);
+        current_iteration_index_(0),
+        max_chunks_(max_chunks) {
+    chunks_.reserve(max_chunks_);
   }
 
   virtual scoped_ptr<TraceBufferChunk> GetChunk(size_t* index) OVERRIDE {
@@ -317,7 +329,7 @@ class TraceBufferVector : public TraceBuffer {
   }
 
   virtual bool IsFull() const OVERRIDE {
-    return chunks_.size() >= kTraceEventVectorBufferChunks;
+    return chunks_.size() >= max_chunks_;
   }
 
   virtual size_t Size() const OVERRIDE {
@@ -326,7 +338,7 @@ class TraceBufferVector : public TraceBuffer {
   }
 
   virtual size_t Capacity() const OVERRIDE {
-    return kTraceEventVectorBufferChunks * kTraceBufferChunkSize;
+    return max_chunks_ * kTraceBufferChunkSize;
   }
 
   virtual TraceEvent* GetEventByHandle(TraceEventHandle handle) OVERRIDE {
@@ -356,6 +368,7 @@ class TraceBufferVector : public TraceBuffer {
  private:
   size_t in_flight_chunk_count_;
   size_t current_iteration_index_;
+  size_t max_chunks_;
   ScopedVector<TraceBufferChunk> chunks_;
 
   DISALLOW_COPY_AND_ASSIGN(TraceBufferVector);
@@ -967,6 +980,65 @@ TraceBucketData::~TraceBucketData() {
 
 ////////////////////////////////////////////////////////////////////////////////
 //
+// TraceOptions
+//
+////////////////////////////////////////////////////////////////////////////////
+
+bool TraceOptions::SetFromString(const std::string& options_string) {
+  record_mode = RECORD_UNTIL_FULL;
+  enable_sampling = false;
+  enable_systrace = false;
+
+  std::vector<std::string> split;
+  std::vector<std::string>::iterator iter;
+  base::SplitString(options_string, ',', &split);
+  for (iter = split.begin(); iter != split.end(); ++iter) {
+    if (*iter == kRecordUntilFull) {
+      record_mode = RECORD_UNTIL_FULL;
+    } else if (*iter == kRecordContinuously) {
+      record_mode = RECORD_CONTINUOUSLY;
+    } else if (*iter == kTraceToConsole) {
+      record_mode = ECHO_TO_CONSOLE;
+    } else if (*iter == kRecordAsMuchAsPossible) {
+      record_mode = RECORD_AS_MUCH_AS_POSSIBLE;
+    } else if (*iter == kEnableSampling) {
+      enable_sampling = true;
+    } else if (*iter == kEnableSystrace) {
+      enable_systrace = true;
+    } else {
+      return false;
+    }
+  }
+  return true;
+}
+
+std::string TraceOptions::ToString() const {
+  std::string ret;
+  switch (record_mode) {
+    case RECORD_UNTIL_FULL:
+      ret = kRecordUntilFull;
+      break;
+    case RECORD_CONTINUOUSLY:
+      ret = kRecordContinuously;
+      break;
+    case ECHO_TO_CONSOLE:
+      ret = kTraceToConsole;
+      break;
+    case RECORD_AS_MUCH_AS_POSSIBLE:
+      ret = kRecordAsMuchAsPossible;
+      break;
+    default:
+      NOTREACHED();
+  }
+  if (enable_sampling)
+    ret = ret + "," + kEnableSampling;
+  if (enable_systrace)
+    ret = ret + "," + kEnableSystrace;
+  return ret;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
 // TraceLog
 //
 ////////////////////////////////////////////////////////////////////////////////
@@ -1134,7 +1206,7 @@ TraceLog::TraceLog()
       process_id_hash_(0),
       process_id_(0),
       watch_category_(0),
-      trace_options_(RECORD_UNTIL_FULL),
+      trace_options_(kInternalRecordUntilFull),
       sampling_thread_handle_(0),
       category_filter_(CategoryFilter::kDefaultCategoryFilterString),
       event_callback_category_filter_(
@@ -1172,7 +1244,9 @@ TraceLog::TraceLog()
 
     LOG(ERROR) << "Start " << switches::kTraceToConsole
                << " with CategoryFilter '" << filter << "'.";
-    SetEnabled(CategoryFilter(filter), RECORDING_MODE, ECHO_TO_CONSOLE);
+    SetEnabled(CategoryFilter(filter),
+               RECORDING_MODE,
+               TraceOptions(ECHO_TO_CONSOLE));
   }
 #endif
 
@@ -1208,7 +1282,7 @@ const char* TraceLog::GetCategoryGroupName(
   return g_category_groups[category_index];
 }
 
-void TraceLog::UpdateCategoryGroupEnabledFlag(int category_index) {
+void TraceLog::UpdateCategoryGroupEnabledFlag(size_t category_index) {
   unsigned char enabled_flag = 0;
   const char* category_group = g_category_groups[category_index];
   if (mode_ == RECORDING_MODE &&
@@ -1224,7 +1298,8 @@ void TraceLog::UpdateCategoryGroupEnabledFlag(int category_index) {
 }
 
 void TraceLog::UpdateCategoryGroupEnabledFlags() {
-  for (int i = 0; i < g_category_index; i++)
+  size_t category_index = base::subtle::NoBarrier_Load(&g_category_index);
+  for (size_t i = 0; i < category_index; i++)
     UpdateCategoryGroupEnabledFlag(i);
 }
 
@@ -1261,39 +1336,50 @@ const unsigned char* TraceLog::GetCategoryGroupEnabledInternal(
     const char* category_group) {
   DCHECK(!strchr(category_group, '"')) <<
       "Category groups may not contain double quote";
-  AutoLock lock(lock_);
+  // The g_category_groups is append only, avoid using a lock for the fast path.
+  size_t current_category_index = base::subtle::Acquire_Load(&g_category_index);
 
-  unsigned char* category_group_enabled = NULL;
   // Search for pre-existing category group.
-  for (int i = 0; i < g_category_index; i++) {
+  for (size_t i = 0; i < current_category_index; ++i) {
     if (strcmp(g_category_groups[i], category_group) == 0) {
-      category_group_enabled = &g_category_group_enabled[i];
-      break;
+      return &g_category_group_enabled[i];
     }
   }
 
-  if (!category_group_enabled) {
-    // Create a new category group
-    DCHECK(g_category_index < MAX_CATEGORY_GROUPS) <<
-        "must increase MAX_CATEGORY_GROUPS";
-    if (g_category_index < MAX_CATEGORY_GROUPS) {
-      int new_index = g_category_index++;
-      // Don't hold on to the category_group pointer, so that we can create
-      // category groups with strings not known at compile time (this is
-      // required by SetWatchEvent).
-      const char* new_group = strdup(category_group);
-      ANNOTATE_LEAKING_OBJECT_PTR(new_group);
-      g_category_groups[new_index] = new_group;
-      DCHECK(!g_category_group_enabled[new_index]);
-      // Note that if both included and excluded patterns in the
-      // CategoryFilter are empty, we exclude nothing,
-      // thereby enabling this category group.
-      UpdateCategoryGroupEnabledFlag(new_index);
-      category_group_enabled = &g_category_group_enabled[new_index];
-    } else {
-      category_group_enabled =
-          &g_category_group_enabled[g_category_categories_exhausted];
+  unsigned char* category_group_enabled = NULL;
+  // This is the slow path: the lock is not held in the case above, so more
+  // than one thread could have reached here trying to add the same category.
+  // Only hold to lock when actually appending a new category, and
+  // check the categories groups again.
+  AutoLock lock(lock_);
+  size_t category_index = base::subtle::Acquire_Load(&g_category_index);
+  for (size_t i = 0; i < category_index; ++i) {
+    if (strcmp(g_category_groups[i], category_group) == 0) {
+      return &g_category_group_enabled[i];
     }
+  }
+
+  // Create a new category group.
+  DCHECK(category_index < MAX_CATEGORY_GROUPS) <<
+      "must increase MAX_CATEGORY_GROUPS";
+  if (category_index < MAX_CATEGORY_GROUPS) {
+    // Don't hold on to the category_group pointer, so that we can create
+    // category groups with strings not known at compile time (this is
+    // required by SetWatchEvent).
+    const char* new_group = strdup(category_group);
+    ANNOTATE_LEAKING_OBJECT_PTR(new_group);
+    g_category_groups[category_index] = new_group;
+    DCHECK(!g_category_group_enabled[category_index]);
+    // Note that if both included and excluded patterns in the
+    // CategoryFilter are empty, we exclude nothing,
+    // thereby enabling this category group.
+    UpdateCategoryGroupEnabledFlag(category_index);
+    category_group_enabled = &g_category_group_enabled[category_index];
+    // Update the max index now.
+    base::subtle::Release_Store(&g_category_index, category_index + 1);
+  } else {
+    category_group_enabled =
+        &g_category_group_enabled[g_category_categories_exhausted];
   }
   return category_group_enabled;
 }
@@ -1303,13 +1389,14 @@ void TraceLog::GetKnownCategoryGroups(
   AutoLock lock(lock_);
   category_groups->push_back(
       g_category_groups[g_category_trace_event_overhead]);
-  for (int i = g_num_builtin_categories; i < g_category_index; i++)
+  size_t category_index = base::subtle::NoBarrier_Load(&g_category_index);
+  for (size_t i = g_num_builtin_categories; i < category_index; i++)
     category_groups->push_back(g_category_groups[i]);
 }
 
 void TraceLog::SetEnabled(const CategoryFilter& category_filter,
                           Mode mode,
-                          Options options) {
+                          const TraceOptions& options) {
   std::vector<EnabledStateObserver*> observer_list;
   {
     AutoLock lock(lock_);
@@ -1317,10 +1404,13 @@ void TraceLog::SetEnabled(const CategoryFilter& category_filter,
     // Can't enable tracing when Flush() is in progress.
     DCHECK(!flush_message_loop_proxy_.get());
 
-    Options old_options = trace_options();
+    InternalTraceOptions new_options =
+        GetInternalOptionsFromTraceOptions(options);
+
+   InternalTraceOptions old_options = trace_options();
 
     if (IsEnabled()) {
-      if (options != old_options) {
+      if (new_options != old_options) {
         DLOG(ERROR) << "Attempting to re-enable tracing with a different "
                     << "set of options.";
       }
@@ -1342,8 +1432,8 @@ void TraceLog::SetEnabled(const CategoryFilter& category_filter,
 
     mode_ = mode;
 
-    if (options != old_options) {
-      subtle::NoBarrier_Store(&trace_options_, options);
+    if (new_options != old_options) {
+      subtle::NoBarrier_Store(&trace_options_, new_options);
       UseNextTraceBuffer();
     }
 
@@ -1353,7 +1443,7 @@ void TraceLog::SetEnabled(const CategoryFilter& category_filter,
     UpdateCategoryGroupEnabledFlags();
     UpdateSyntheticDelaysFromCategoryFilter();
 
-    if (options & ENABLE_SAMPLING) {
+    if (new_options & kInternalEnableSampling) {
       sampling_thread_.reset(new TraceSamplingThread);
       sampling_thread_->RegisterSampleBucket(
           &g_trace_state[0],
@@ -1386,9 +1476,44 @@ void TraceLog::SetEnabled(const CategoryFilter& category_filter,
   }
 }
 
+TraceLog::InternalTraceOptions TraceLog::GetInternalOptionsFromTraceOptions(
+    const TraceOptions& options) {
+  InternalTraceOptions ret =
+      options.enable_sampling ? kInternalEnableSampling : kInternalNone;
+  switch (options.record_mode) {
+    case RECORD_UNTIL_FULL:
+      return ret | kInternalRecordUntilFull;
+    case RECORD_CONTINUOUSLY:
+      return ret | kInternalRecordContinuously;
+    case ECHO_TO_CONSOLE:
+      return ret | kInternalEchoToConsole;
+    case RECORD_AS_MUCH_AS_POSSIBLE:
+      return ret | kInternalRecordAsMuchAsPossible;
+  }
+  NOTREACHED();
+  return kInternalNone;
+}
+
 CategoryFilter TraceLog::GetCurrentCategoryFilter() {
   AutoLock lock(lock_);
   return category_filter_;
+}
+
+TraceOptions TraceLog::GetCurrentTraceOptions() const {
+  TraceOptions ret;
+  InternalTraceOptions option = trace_options();
+  ret.enable_sampling = (option & kInternalEnableSampling) != 0;
+  if (option & kInternalRecordUntilFull)
+    ret.record_mode = RECORD_UNTIL_FULL;
+  else if (option & kInternalRecordContinuously)
+    ret.record_mode = RECORD_CONTINUOUSLY;
+  else if (option & kInternalEchoToConsole)
+    ret.record_mode = ECHO_TO_CONSOLE;
+  else if (option & kInternalRecordAsMuchAsPossible)
+    ret.record_mode = RECORD_AS_MUCH_AS_POSSIBLE;
+  else
+    NOTREACHED();
+  return ret;
 }
 
 void TraceLog::SetDisabled() {
@@ -1480,14 +1605,20 @@ bool TraceLog::BufferIsFull() const {
 }
 
 TraceBuffer* TraceLog::CreateTraceBuffer() {
-  Options options = trace_options();
-  if (options & RECORD_CONTINUOUSLY)
+  InternalTraceOptions options = trace_options();
+  if (options & kInternalRecordContinuously)
     return new TraceBufferRingBuffer(kTraceEventRingBufferChunks);
-  else if ((options & ENABLE_SAMPLING) && mode_ == MONITORING_MODE)
+  else if ((options & kInternalEnableSampling) && mode_ == MONITORING_MODE)
     return new TraceBufferRingBuffer(kMonitorTraceEventBufferChunks);
-  else if (options & ECHO_TO_CONSOLE)
+  else if (options & kInternalEchoToConsole)
     return new TraceBufferRingBuffer(kEchoToConsoleTraceEventBufferChunks);
-  return new TraceBufferVector();
+  else if (options & kInternalRecordAsMuchAsPossible)
+    return CreateTraceBufferVectorOfSize(kTraceEventVectorBigBufferChunks);
+  return CreateTraceBufferVectorOfSize(kTraceEventVectorBufferChunks);
+}
+
+TraceBuffer* TraceLog::CreateTraceBufferVectorOfSize(size_t max_chunks) {
+  return new TraceBufferVector(max_chunks);
 }
 
 TraceEvent* TraceLog::AddEventToThreadSharedChunkWhileLocked(
@@ -1519,8 +1650,12 @@ TraceEvent* TraceLog::AddEventToThreadSharedChunkWhileLocked(
 
 void TraceLog::CheckIfBufferIsFullWhileLocked() {
   lock_.AssertAcquired();
-  if (logged_events_->IsFull())
+  if (logged_events_->IsFull()) {
+    if (buffer_limit_reached_timestamp_.is_null()) {
+      buffer_limit_reached_timestamp_ = OffsetNow();
+    }
     SetDisabledWhileLocked();
+  }
 }
 
 void TraceLog::SetEventCallbackEnabled(const CategoryFilter& category_filter,
@@ -1850,7 +1985,7 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
 #endif
     }
 
-    if (trace_options() & ECHO_TO_CONSOLE) {
+    if (trace_options() & kInternalEchoToConsole) {
       console_message = EventToConsoleMessage(
           phase == TRACE_EVENT_PHASE_COMPLETE ? TRACE_EVENT_PHASE_BEGIN : phase,
           timestamp, trace_event);
@@ -1993,7 +2128,7 @@ void TraceLog::UpdateTraceEventDuration(
 #endif
     }
 
-    if (trace_options() & ECHO_TO_CONSOLE) {
+    if (trace_options() & kInternalEchoToConsole) {
       console_message = EventToConsoleMessage(TRACE_EVENT_PHASE_END,
                                               now, trace_event);
     }
@@ -2034,6 +2169,14 @@ void TraceLog::CancelWatchEvent() {
 
 void TraceLog::AddMetadataEventsWhileLocked() {
   lock_.AssertAcquired();
+
+#if !defined(OS_NACL)  // NaCl shouldn't expose the process id.
+  InitializeMetadataEvent(AddEventToThreadSharedChunkWhileLocked(NULL, false),
+                          0,
+                          "num_cpus", "number",
+                          base::SysInfo::NumberOfProcessors());
+#endif
+
 
   int current_thread_id = static_cast<int>(base::PlatformThread::CurrentId());
   if (process_sort_index_ != 0) {
@@ -2086,6 +2229,15 @@ void TraceLog::AddMetadataEventsWhileLocked() {
                             it->first,
                             "thread_name", "name",
                             it->second);
+  }
+
+  // If buffer is full, add a metadata record to report this.
+  if (!buffer_limit_reached_timestamp_.is_null()) {
+    InitializeMetadataEvent(AddEventToThreadSharedChunkWhileLocked(NULL, false),
+                            current_thread_id,
+                            "trace_buffer_overflowed",
+                            "overflowed_at_ts",
+                            buffer_limit_reached_timestamp_);
   }
 }
 
@@ -2218,6 +2370,10 @@ CategoryFilter::CategoryFilter(const std::string& filter_string) {
   if (!filter_string.empty())
     Initialize(filter_string);
   else
+    Initialize(CategoryFilter::kDefaultCategoryFilterString);
+}
+
+CategoryFilter::CategoryFilter() {
     Initialize(CategoryFilter::kDefaultCategoryFilterString);
 }
 

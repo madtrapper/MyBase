@@ -28,9 +28,20 @@ class BASE_EXPORT SysInfo {
   // machine.
   static int64 AmountOfAvailablePhysicalMemory();
 
+  // Return the number of bytes of virtual memory of this process. A return
+  // value of zero means that there is no limit on the available virtual
+  // memory.
+  static int64 AmountOfVirtualMemory();
+
   // Return the number of megabytes of physical memory on the current machine.
   static int AmountOfPhysicalMemoryMB() {
     return static_cast<int>(AmountOfPhysicalMemory() / 1024 / 1024);
+  }
+
+  // Return the number of megabytes of available virtual memory, or zero if it
+  // is unlimited.
+  static int AmountOfVirtualMemoryMB() {
+    return static_cast<int>(AmountOfVirtualMemory() / 1024 / 1024);
   }
 
   // Return the available disk space in bytes on the volume containing |path|,
@@ -118,6 +129,11 @@ class BASE_EXPORT SysInfo {
   static int DalvikHeapSizeMB();
   static int DalvikHeapGrowthLimitMB();
 #endif  // defined(OS_ANDROID)
+
+  // Returns true if this is a low-end device.
+  // Low-end device refers to devices having less than 512M memory in the
+  // current implementation.
+  static bool IsLowEndDevice();
 };
 
 }  // namespace base

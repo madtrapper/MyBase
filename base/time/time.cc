@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/time/time.h"
+
 #include <limits>
 #include <ostream>
 
@@ -10,7 +11,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/third_party/nspr/prtime.h"
-#include "base/third_party/nspr/prtypes.h"
 
 namespace base {
 

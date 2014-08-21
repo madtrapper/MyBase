@@ -154,12 +154,6 @@ class BASE_EXPORT ProcessMetrics {
   // usage in bytes, as per definition of WorkingSetBytes.
   bool GetWorkingSetKBytes(WorkingSetKBytes* ws_usage) const;
 
-  // Computes the current process available memory for allocation.
-  // It does a linear scan of the address space querying each memory region
-  // for its free (unallocated) status. It is useful for estimating the memory
-  // load and fragmentation.
-  bool CalculateFreeMemory(FreeMBytes* free) const;
-
   // Returns the CPU usage in percent since the last time this method or
   // GetPlatformIndependentCPUUsage() was called. The first time this method
   // is called it returns 0 and will return the actual CPU info on subsequent
@@ -205,11 +199,11 @@ class BASE_EXPORT ProcessMetrics {
 
   // Used to store the previous times and CPU usage counts so we can
   // compute the CPU usage between calls.
-  int64 last_cpu_time_;
+  TimeTicks last_cpu_time_;
   int64 last_system_time_;
 
   // Same thing for idle wakeups.
-  int64 last_idle_wakeups_time_;
+  TimeTicks last_idle_wakeups_time_;
   int64 last_absolute_idle_wakeups_;
 
 #if !defined(OS_IOS)
@@ -235,6 +229,10 @@ BASE_EXPORT size_t GetSystemCommitCharge();
 // Returns the maximum number of file descriptors that can be open by a process
 // at once. If the number is unavailable, a conservative best guess is returned.
 size_t GetMaxFds();
+
+// Sets the file descriptor soft limit to |max_descriptors| or the OS hard
+// limit, whichever is lower.
+BASE_EXPORT void SetFdLimit(unsigned int max_descriptors);
 #endif  // defined(OS_POSIX)
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)

@@ -38,6 +38,7 @@
     <ClInclude Include="debug\leak_annotations.h" />
     <ClInclude Include="debug\profiler.h" />
     <ClInclude Include="debug\stack_trace.h" />
+    <ClInclude Include="debug\task_annotator.h" />
     <ClInclude Include="debug\trace_event.h" />
     <ClInclude Include="debug\trace_event_impl.h" />
     <ClInclude Include="debug\trace_event_memory.h" />
@@ -49,6 +50,7 @@
     <ClInclude Include="files\file.h" />
     <ClInclude Include="files\file_enumerator.h" />
     <ClInclude Include="files\file_path.h" />
+    <ClInclude Include="files\file_util.h" />
     <ClInclude Include="files\scoped_file.h" />
     <ClInclude Include="file_util.h" />
     <ClInclude Include="float_util.h" />
@@ -79,8 +81,8 @@
     <ClInclude Include="message_loop\message_pump.h" />
     <ClInclude Include="message_loop\message_pump_default.h" />
     <ClInclude Include="message_loop\message_pump_dispatcher.h" />
-    <ClInclude Include="message_loop\message_pump_observer.h" />
     <ClInclude Include="message_loop\message_pump_win.h" />
+    <ClInclude Include="message_loop\timer_slack.h" />
     <ClInclude Include="metrics\bucket_ranges.h" />
     <ClInclude Include="metrics\histogram.h" />
     <ClInclude Include="metrics\histogram_base.h" />
@@ -94,7 +96,6 @@
     <ClInclude Include="path_service.h" />
     <ClInclude Include="pending_task.h" />
     <ClInclude Include="pickle.h" />
-    <ClInclude Include="platform_file.h" />
     <ClInclude Include="port.h" />
     <ClInclude Include="posix\eintr_wrapper.h" />
     <ClInclude Include="process\kill.h" />
@@ -132,15 +133,13 @@
     <ClInclude Include="synchronization\lock_impl.h" />
     <ClInclude Include="synchronization\waitable_event.h" />
     <ClInclude Include="sys_info.h" />
+    <ClInclude Include="sys_info_internal.h" />
     <ClInclude Include="task_runner.h" />
     <ClInclude Include="template_util.h" />
     <ClInclude Include="third_party\dmg_fp\dmg_fp.h" />
     <ClInclude Include="third_party\dynamic_annotations\dynamic_annotations.h" />
     <ClInclude Include="third_party\icu\icu_utf.h" />
-    <ClInclude Include="third_party\nspr\prcpucfg.h" />
-    <ClInclude Include="third_party\nspr\prcpucfg_win.h" />
     <ClInclude Include="third_party\nspr\prtime.h" />
-    <ClInclude Include="third_party\nspr\prtypes.h" />
     <ClInclude Include="third_party\valgrind\memcheck.h" />
     <ClInclude Include="third_party\valgrind\valgrind.h" />
     <ClInclude Include="threading\non_thread_safe.h" />
@@ -191,6 +190,7 @@
     <ClCompile Include="debug\profiler.cc" />
     <ClCompile Include="debug\stack_trace.cc" />
     <ClCompile Include="debug\stack_trace_win.cc" />
+    <ClCompile Include="debug\task_annotator.cc" />
     <ClCompile Include="debug\trace_event_impl.cc" />
     <ClCompile Include="debug\trace_event_impl_constants.cc" />
     <ClCompile Include="debug\trace_event_memory.cc" />
@@ -203,10 +203,10 @@
     <ClCompile Include="files\file_enumerator_win.cc" />
     <ClCompile Include="files\file_path.cc" />
     <ClCompile Include="files\file_path_constants.cc" />
+    <ClCompile Include="files\file_util.cc" />
+    <ClCompile Include="files\file_util_win.cc" />
     <ClCompile Include="files\file_win.cc" />
     <ClCompile Include="files\scoped_file.cc" />
-    <ClCompile Include="file_util.cc" />
-    <ClCompile Include="file_util_win.cc" />
     <ClCompile Include="json\json_parser.cc" />
     <ClCompile Include="json\json_reader.cc" />
     <ClCompile Include="json\json_string_value_serializer.cc" />
@@ -238,8 +238,6 @@
     <ClCompile Include="path_service.cc" />
     <ClCompile Include="pending_task.cc" />
     <ClCompile Include="pickle.cc" />
-    <ClCompile Include="platform_file.cc" />
-    <ClCompile Include="platform_file_win.cc" />
     <ClCompile Include="process\kill.cc" />
     <ClCompile Include="process\kill_win.cc" />
     <ClCompile Include="process\launch_win.cc" />
@@ -271,6 +269,7 @@
     <ClCompile Include="synchronization\lock_impl_win.cc" />
     <ClCompile Include="synchronization\waitable_event_win.cc" />
     <ClCompile Include="sys_info.cc" />
+    <ClCompile Include="sys_info_win.cc" />
     <ClCompile Include="task_runner.cc" />
     <ClCompile Include="third_party\dmg_fp\dtoa_wrapper.cc" />
     <ClCompile Include="third_party\dmg_fp\g_fmt.cc" />

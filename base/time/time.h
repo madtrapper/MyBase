@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Time represents an absolute point in time, internally represented as
-// microseconds (s/1,000,000) since the Windows epoch (1601-01-01 00:00:00 UTC)
-// (See http://crbug.com/14734).  System-dependent clock interface routines are
-// defined in time_PLATFORM.cc.
+// Time represents an absolute point in coordinated universal time (UTC),
+// internally represented as microseconds (s/1,000,000) since the Windows epoch
+// (1601-01-01 00:00:00 UTC) (See http://crbug.com/14734).  System-dependent
+// clock interface routines are defined in time_PLATFORM.cc.
 //
 // TimeDelta represents a duration of time, internally represented in
 // microseconds.
@@ -43,14 +43,12 @@
 #if defined(OS_WIN)
 // For FILETIME in FromFileTime, until it moves to a new converter class.
 // See TODO(iyengar) below.
+#undef max
+#undef min
 #include <windows.h>
 #endif
 
 #include <limits>
-
-//FIXME
-#undef max
-#undef min
 
 namespace base {
 
@@ -70,6 +68,8 @@ class BASE_EXPORT TimeDelta {
   static TimeDelta FromMinutes(int minutes);
   static TimeDelta FromSeconds(int64 secs);
   static TimeDelta FromMilliseconds(int64 ms);
+  static TimeDelta FromSecondsD(double secs);
+  static TimeDelta FromMillisecondsD(double ms);
   static TimeDelta FromMicroseconds(int64 us);
 #if defined(OS_WIN)
   static TimeDelta FromQPCValue(LONGLONG qpc_value);
@@ -210,7 +210,7 @@ inline TimeDelta operator*(int64 a, TimeDelta td) {
 
 // Time -----------------------------------------------------------------------
 
-// Represents a wall clock time.
+// Represents a wall clock time in UTC.
 class BASE_EXPORT Time {
  public:
   static const int64 kMillisecondsPerSecond = 1000;
@@ -232,6 +232,11 @@ class BASE_EXPORT Time {
   // this global header and put in the platform-specific ones when we remove the
   // migration code.
   static const int64 kWindowsEpochDeltaMicroseconds;
+#else
+  // To avoid overflow in QPC to Microseconds calculations, since we multiply
+  // by kMicrosecondsPerSecond, then the QPC value should not exceed
+  // (2^63 - 1) / 1E6. If it exceeds that threshold, we divide then multiply.
+  static const int64 kQPCOverflowThreshold = 0x8637BD05AF7;
 #endif
 
   // Represents an exploded time that can be formatted nicely. This is kind of
@@ -547,6 +552,22 @@ inline TimeDelta TimeDelta::FromMilliseconds(int64 ms) {
 }
 
 // static
+inline TimeDelta TimeDelta::FromSecondsD(double secs) {
+  // Preserve max to prevent overflow.
+  if (secs == std::numeric_limits<double>::infinity())
+    return Max();
+  return TimeDelta(secs * Time::kMicrosecondsPerSecond);
+}
+
+// static
+inline TimeDelta TimeDelta::FromMillisecondsD(double ms) {
+  // Preserve max to prevent overflow.
+  if (ms == std::numeric_limits<double>::infinity())
+    return Max();
+  return TimeDelta(ms * Time::kMicrosecondsPerMillisecond);
+}
+
+// static
 inline TimeDelta TimeDelta::FromMicroseconds(int64 us) {
   // Preserve max to prevent overflow.
   if (us == std::numeric_limits<int64>::max())
@@ -562,6 +583,14 @@ inline Time TimeDelta::operator+(Time t) const {
 
 class BASE_EXPORT TimeTicks {
  public:
+  // We define this even without OS_CHROMEOS for seccomp sandbox testing.
+#if defined(OS_LINUX)
+  // Force definition of the system trace clock; it is a chromeos-only api
+  // at the moment and surfacing it in the right place requires mucking
+  // with glibc et al.
+  static const clockid_t kClockSystemTrace = 11;
+#endif
+
   TimeTicks() : ticks_(0) {
   }
 
