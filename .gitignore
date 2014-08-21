@@ -2,6 +2,10 @@
 *.swp
 *.opensdf
 *.suo
+*.pdb
+*.idb
+*.obj
+*.tlog
 /Release/
 /Debug/
 
