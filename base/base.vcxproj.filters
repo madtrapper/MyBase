@@ -373,6 +373,25 @@
     <ClInclude Include="message_loop\timer_slack.h">
       <Filter>message_loop</Filter>
     </ClInclude>
+    <ClInclude Include="profiler\scoped_profile.h">
+      <Filter>profiler</Filter>
+    </ClInclude>
+    <ClInclude Include="containers\small_map.h">
+      <Filter>containers</Filter>
+    </ClInclude>
+    <ClInclude Include="memory\manual_constructor.h">
+      <Filter>memory</Filter>
+    </ClInclude>
+    <ClInclude Include="auto_reset.h" />
+    <ClInclude Include="threading\thread_checker.h">
+      <Filter>threading</Filter>
+    </ClInclude>
+    <ClInclude Include="strings\nullable_string16.h">
+      <Filter>strings</Filter>
+    </ClInclude>
+    <ClInclude Include="synchronization\waitable_event_watcher.h">
+      <Filter>synchronization</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="threading">
@@ -776,6 +795,15 @@
     </ClCompile>
     <ClCompile Include="process\process_metrics_win.cc">
       <Filter>process</Filter>
+    </ClCompile>
+    <ClCompile Include="profiler\scoped_profile.cc">
+      <Filter>profiler</Filter>
+    </ClCompile>
+    <ClCompile Include="strings\nullable_string16.cc">
+      <Filter>strings</Filter>
+    </ClCompile>
+    <ClCompile Include="synchronization\waitable_event_watcher_win.cc">
+      <Filter>synchronization</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

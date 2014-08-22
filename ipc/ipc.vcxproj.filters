@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="ipc_channel.h" />
+    <ClInclude Include="ipc_channel_handle.h" />
+    <ClInclude Include="ipc_channel_factory.h" />
+    <ClInclude Include="ipc_channel_proxy.h" />
+    <ClInclude Include="ipc_channel_reader.h" />
+    <ClInclude Include="ipc_channel_win.h" />
+    <ClInclude Include="ipc_descriptors.h" />
+    <ClInclude Include="ipc_forwarding_message_filter.h" />
+    <ClInclude Include="ipc_export.h" />
+    <ClInclude Include="ipc_listener.h" />
+    <ClInclude Include="ipc_message.h" />
+    <ClInclude Include="ipc_message_start.h" />
+    <ClInclude Include="ipc_message_macros.h" />
+    <ClInclude Include="ipc_message_utils.h" />
+    <ClInclude Include="ipc_param_traits.h" />
+    <ClInclude Include="ipc_platform_file.h" />
+    <ClInclude Include="ipc_switches.h" />
+    <ClInclude Include="ipc_sender.h" />
+    <ClInclude Include="ipc_sync_message.h" />
+    <ClInclude Include="ipc_sync_channel.h" />
+    <ClInclude Include="ipc_sync_message_filter.h" />
+    <ClInclude Include="message_filter.h" />
+    <ClInclude Include="message_filter_router.h" />
+    <ClInclude Include="param_traits_log_macros.h" />
+    <ClInclude Include="param_traits_macros.h" />
+    <ClInclude Include="param_traits_write_macros.h" />
+    <ClInclude Include="param_traits_read_macros.h" />
+    <ClInclude Include="unix_domain_socket_util.h" />
+    <ClInclude Include="struct_constructor_macros.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ipc_channel.cc" />
+    <ClCompile Include="ipc_channel_common.cc" />
+    <ClCompile Include="ipc_channel_factory.cc" />
+    <ClCompile Include="ipc_channel_proxy.cc" />
+    <ClCompile Include="ipc_channel_reader.cc" />
+    <ClCompile Include="ipc_channel_win.cc" />
+    <ClCompile Include="ipc_forwarding_message_filter.cc" />
+    <ClCompile Include="ipc_message.cc" />
+    <ClCompile Include="ipc_message_utils.cc" />
+    <ClCompile Include="ipc_platform_file.cc" />
+    <ClCompile Include="ipc_switches.cc" />
+    <ClCompile Include="ipc_sync_message.cc" />
+    <ClCompile Include="ipc_sync_channel.cc" />
+    <ClCompile Include="ipc_sync_message_filter.cc" />
+    <ClCompile Include="message_filter.cc" />
+    <ClCompile Include="message_filter_router.cc" />
+  </ItemGroup>
+</Project>

@@ -15,6 +15,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "file_path_unittest", "unit_
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "message_loop_unittest", "unit_test\message_loop_unittest\message_loop_unittest.vcxproj", "{49C2D37F-001D-4979-8016-DD653DC100D2}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ipc", "ipc\ipc.vcxproj", "{09231256-9249-4E87-814F-26322F4A2E47}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -53,6 +55,12 @@ Global
 		{49C2D37F-001D-4979-8016-DD653DC100D2}.Release|Win32.ActiveCfg = Release|Win32
 		{49C2D37F-001D-4979-8016-DD653DC100D2}.Release|Win32.Build.0 = Release|Win32
 		{49C2D37F-001D-4979-8016-DD653DC100D2}.Release|x64.ActiveCfg = Release|Win32
+		{09231256-9249-4E87-814F-26322F4A2E47}.Debug|Win32.ActiveCfg = Debug|Win32
+		{09231256-9249-4E87-814F-26322F4A2E47}.Debug|Win32.Build.0 = Debug|Win32
+		{09231256-9249-4E87-814F-26322F4A2E47}.Debug|x64.ActiveCfg = Debug|Win32
+		{09231256-9249-4E87-814F-26322F4A2E47}.Release|Win32.ActiveCfg = Release|Win32
+		{09231256-9249-4E87-814F-26322F4A2E47}.Release|Win32.Build.0 = Release|Win32
+		{09231256-9249-4E87-814F-26322F4A2E47}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
