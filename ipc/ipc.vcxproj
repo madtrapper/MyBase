@@ -21,10 +21,12 @@
     <ClInclude Include="ipc_export.h" />
     <ClInclude Include="ipc_forwarding_message_filter.h" />
     <ClInclude Include="ipc_listener.h" />
+    <ClInclude Include="ipc_logging.h" />
     <ClInclude Include="ipc_message.h" />
     <ClInclude Include="ipc_message_macros.h" />
     <ClInclude Include="ipc_message_start.h" />
     <ClInclude Include="ipc_message_utils.h" />
+    <ClInclude Include="ipc_message_utils_impl.h" />
     <ClInclude Include="ipc_param_traits.h" />
     <ClInclude Include="ipc_platform_file.h" />
     <ClInclude Include="ipc_sender.h" />
@@ -49,6 +51,7 @@
     <ClCompile Include="ipc_channel_reader.cc" />
     <ClCompile Include="ipc_channel_win.cc" />
     <ClCompile Include="ipc_forwarding_message_filter.cc" />
+    <ClCompile Include="ipc_logging.cc" />
     <ClCompile Include="ipc_message.cc" />
     <ClCompile Include="ipc_message_utils.cc" />
     <ClCompile Include="ipc_platform_file.cc" />
@@ -104,6 +107,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4127;4351;4355;4503;4611;4100;4121;4189;4244;4481;4505;4510;4512;4610;4702;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -122,6 +126,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4127;4351;4355;4503;4611;4100;4121;4189;4244;4481;4505;4510;4512;4610;4702;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

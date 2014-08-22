@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/at_exit.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -1025,6 +1026,7 @@ TEST(MessageLoopTest, AlwaysHaveUserMessageWhenNesting) {
 
 int main(int argc, char **argv) 
 {
+	base::AtExitManager exit_manager;
 	::testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();
 }

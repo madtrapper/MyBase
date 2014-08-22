@@ -30,6 +30,8 @@
     <ClInclude Include="param_traits_read_macros.h" />
     <ClInclude Include="unix_domain_socket_util.h" />
     <ClInclude Include="struct_constructor_macros.h" />
+    <ClInclude Include="ipc_message_utils_impl.h" />
+    <ClInclude Include="ipc_logging.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ipc_channel.cc" />
@@ -48,5 +50,6 @@
     <ClCompile Include="ipc_sync_message_filter.cc" />
     <ClCompile Include="message_filter.cc" />
     <ClCompile Include="message_filter_router.cc" />
+    <ClCompile Include="ipc_logging.cc" />
   </ItemGroup>
 </Project>
