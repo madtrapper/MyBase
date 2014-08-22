@@ -51,7 +51,6 @@
     <ClInclude Include="files\file_enumerator.h" />
     <ClInclude Include="files\file_path.h" />
     <ClInclude Include="files\file_util.h" />
-    <ClInclude Include="files\scoped_file.h" />
     <ClInclude Include="file_util.h" />
     <ClInclude Include="float_util.h" />
     <ClInclude Include="format_macros.h" />
@@ -206,7 +205,6 @@
     <ClCompile Include="files\file_util.cc" />
     <ClCompile Include="files\file_util_win.cc" />
     <ClCompile Include="files\file_win.cc" />
-    <ClCompile Include="files\scoped_file.cc" />
     <ClCompile Include="json\json_parser.cc" />
     <ClCompile Include="json\json_reader.cc" />
     <ClCompile Include="json\json_string_value_serializer.cc" />
@@ -247,6 +245,7 @@
     <ClCompile Include="process\process_iterator.cc" />
     <ClCompile Include="process\process_iterator_win.cc" />
     <ClCompile Include="process\process_metrics.cc" />
+    <ClCompile Include="process\process_metrics_win.cc" />
     <ClCompile Include="profiler\alternate_timer.cc" />
     <ClCompile Include="profiler\tracked_time.cc" />
     <ClCompile Include="rand_util.cc" />

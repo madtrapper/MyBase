@@ -332,9 +332,6 @@
     <ClInclude Include="files\file.h">
       <Filter>files</Filter>
     </ClInclude>
-    <ClInclude Include="files\scoped_file.h">
-      <Filter>files</Filter>
-    </ClInclude>
     <ClInclude Include="scoped_generic.h" />
     <ClInclude Include="files\file_enumerator.h">
       <Filter>files</Filter>
@@ -697,9 +694,6 @@
     <ClCompile Include="files\file.cc">
       <Filter>files</Filter>
     </ClCompile>
-    <ClCompile Include="files\scoped_file.cc">
-      <Filter>files</Filter>
-    </ClCompile>
     <ClCompile Include="files\file_enumerator_win.cc">
       <Filter>files</Filter>
     </ClCompile>
@@ -779,6 +773,9 @@
     <ClCompile Include="sys_info_win.cc" />
     <ClCompile Include="debug\task_annotator.cc">
       <Filter>debug</Filter>
+    </ClCompile>
+    <ClCompile Include="process\process_metrics_win.cc">
+      <Filter>process</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
