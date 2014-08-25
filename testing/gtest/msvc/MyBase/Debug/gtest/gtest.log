@@ -1,10 +1,10 @@
-﻿Build started 8/22/2014 10:05:15 PM.
-     1>Project "C:\src\MyBase\MyBase\testing\gtest\msvc\gtest.vcxproj" on node 2 (Build target(s)).
-     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppBuild.targets(1361,5): warning MSB8012: TargetPath(C:\src\MyBase\MyBase\testing\gtest\msvc\MyBase/Debug\gtest.lib) does not match the Library's OutputFile property value (C:\src\MyBase\MyBase\testing\gtest\msvc\MyBase\Debug\gtestd.lib). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Lib.OutputFile).
-     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppBuild.targets(1363,5): warning MSB8012: TargetName(gtest) does not match the Library's OutputFile property value (gtestd). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Lib.OutputFile).
+﻿Build started 8/25/2014 10:41:19 AM.
+     1>Project "F:\Github\BaseSync\MyBase\testing\gtest\msvc\gtest.vcxproj" on node 2 (Build target(s)).
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppBuild.targets(1354,5): warning MSB8012: TargetPath(F:\Github\BaseSync\MyBase\testing\gtest\msvc\MyBase/Debug\gtest.lib) does not match the Library's OutputFile property value (F:\Github\BaseSync\MyBase\testing\gtest\msvc\MyBase\Debug\gtestd.lib). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Lib.OutputFile).
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppBuild.targets(1356,5): warning MSB8012: TargetName(gtest) does not match the Library's OutputFile property value (gtestd). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Lib.OutputFile).
      1>Lib:
-         gtest.vcxproj -> C:\src\MyBase\MyBase\testing\gtest\msvc\MyBase/Debug\gtest.lib
-     1>Done Building Project "C:\src\MyBase\MyBase\testing\gtest\msvc\gtest.vcxproj" (Build target(s)).
+         gtest.vcxproj -> F:\Github\BaseSync\MyBase\testing\gtest\msvc\MyBase/Debug\gtest.lib
+     1>Done Building Project "F:\Github\BaseSync\MyBase\testing\gtest\msvc\gtest.vcxproj" (Build target(s)).
 
 Build succeeded.
 

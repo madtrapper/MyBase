@@ -28,8 +28,7 @@ class SimpleListener : public IPC::Listener {
 public:
 	SimpleListener() : other_(NULL) {}
 
-	void Init(IPC::Sender* s)
-	{
+	void Init(IPC::Sender* s) {
 		other_ = s;
 	}
 
@@ -38,8 +37,7 @@ public:
 		return true;
 	}
 
-	virtual void OnChannelConnected(int32 peer_pid)
-	{
+	virtual void OnChannelConnected(int32 peer_pid) {
 		std::cout << "Listener::OnChannelConnected() : Channel Connected" << std::endl;
 
 		IPC::Message* msg = NULL;
