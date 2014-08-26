@@ -6,11 +6,13 @@
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="port.h" />
-    <ClInclude Include="base_export.h" />
+    <ClInclude Include="platform_thread.h" />
+    <ClInclude Include="base\port.h" />
+    <ClInclude Include="base\base_export.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="platform_thread.cc" />
   </ItemGroup>
 </Project>
