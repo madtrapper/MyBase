@@ -10,6 +10,7 @@
 *.user
 Debug_temp/
 Release_temp/
+x64/
 /Release/
 /Debug/
 /Debug DLL/
