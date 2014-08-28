@@ -8,9 +8,7 @@
 *.obj
 *.tlog
 *.user
-Debug_temp/
 /Release/
 /Debug/
-/Debug DLL/
-/Release DLL/
+
 

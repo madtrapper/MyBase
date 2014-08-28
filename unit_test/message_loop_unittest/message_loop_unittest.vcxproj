@@ -51,7 +51,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;COMPONENT_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)testing\gtest\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -88,8 +88,8 @@
     <ClCompile Include="message_loop_unittest.cc" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\base\base.vcxproj">
-      <Project>{53d3f36b-20d2-4cfd-9faa-095a59544d6e}</Project>
+    <ProjectReference Include="..\..\base\basedll.vcxproj">
+      <Project>{2a83ec00-b40a-4f8b-b26c-745583e67300}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\testing\gtest\msvc\gtest.vcxproj">
       <Project>{c8f6c172-56f2-4e76-b5fa-c3b423b31be7}</Project>
