@@ -9,6 +9,7 @@
 *.tlog
 *.user
 Debug_temp/
+Release_temp/
 /Release/
 /Debug/
 /Debug DLL/

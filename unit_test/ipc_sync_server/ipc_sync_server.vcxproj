@@ -20,8 +20,8 @@
     <ProjectReference Include="..\..\base\basedll.vcxproj">
       <Project>{2a83ec00-b40a-4f8b-b26c-745583e67300}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\ipc\ipc.vcxproj">
-      <Project>{09231256-9249-4e87-814f-26322f4a2e47}</Project>
+    <ProjectReference Include="..\..\ipc\ipcdll.vcxproj">
+      <Project>{6d1c257b-2d0f-4d38-ac6c-c5b648c6a08a}</Project>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -84,9 +84,10 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;COMPONENT_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)testing\gtest\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
