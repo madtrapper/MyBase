@@ -805,5 +805,8 @@
     <ClCompile Include="synchronization\waitable_event_watcher_win.cc">
       <Filter>synchronization</Filter>
     </ClCompile>
+    <ClCompile Include="process\launch.cc">
+      <Filter>process</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
