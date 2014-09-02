@@ -8,6 +8,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="ipc_test_msg.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="total_test.cpp" />

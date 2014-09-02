@@ -147,6 +147,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ipc_test_msg.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
@@ -156,6 +157,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\base\basedll.vcxproj">
       <Project>{2a83ec00-b40a-4f8b-b26c-745583e67300}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ipc\ipcdll.vcxproj">
+      <Project>{6d1c257b-2d0f-4d38-ac6c-c5b648c6a08a}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
