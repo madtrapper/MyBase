@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include <conio.h>
 #include "base/at_exit.h"
+#include "base/run_loop.h"
 #include "base/macros.h"
 #include "base/basictypes.h"
 #include "base/synchronization/waitable_event.h"
@@ -95,12 +96,14 @@ public:
 MsgThread client_srv_thread;
 SrvWorker serverListener;
 scoped_ptr<IPC::SyncChannel> serverChannel;
+
 base::WaitableEvent* wEvent_;
 
 void runas_server() {
 	base::Thread::Options options;
 	wEvent_ = new base::WaitableEvent(false, false);
 	
+
 	options.message_loop_type = base::MessageLoop::TYPE_IO;
 	client_srv_thread.StartWithOptions(options);
 
@@ -110,17 +113,19 @@ void runas_server() {
 		client_srv_thread.message_loop_proxy().get(),
 		true,
 		wEvent_);
-	
+	serverChannel.release();
 	serverListener.Init(static_cast<IPC::Sender*>(serverChannel.get()));
-	
 }
 
 ClientWorker clientListener;
 scoped_ptr<IPC::SyncChannel> clientChannel;
+base:: WaitableEvent quit_ev(false, false);
+base::MessageLoop mainLoop;
 
 void runas_client() {
 	base::Thread::Options options;
 	wEvent_ = new base::WaitableEvent(false, false);
+	
 
 	options.message_loop_type = base::MessageLoop::TYPE_IO;
 	client_srv_thread.StartWithOptions(options);
@@ -130,19 +135,37 @@ void runas_client() {
 		client_srv_thread.message_loop_proxy().get(),
 		true,
 		wEvent_);
-		
-	clientListener.Init(static_cast<IPC::Sender*>(serverChannel.get()));
+	
+	clientChannel.release();
+	clientListener.Init(static_cast<IPC::Sender*>(clientChannel.get()));
 }
+void shit() {
+	mainLoop.QuitWhenIdle();
+}
+BOOL WINAPI HandlerRoutine(_In_  DWORD dwCtrlType) {
+	if (dwCtrlType == CTRL_C_EVENT ||
+		dwCtrlType == CTRL_BREAK_EVENT ||
+		dwCtrlType == CTRL_CLOSE_EVENT ||
+		dwCtrlType == CTRL_LOGOFF_EVENT ||
+		dwCtrlType == CTRL_SHUTDOWN_EVENT) {
+		printf("1-------\n");
+		mainLoop.PostTask(FROM_HERE, base::Bind(&shit));
+		printf("2-------\n");
+	}
+
+	return TRUE;
+}
+
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	base::MessageLoop mainLoop;
 	CommandLine cl(argc, argv);
 	
 	base::FilePath exePath;
 	wchar_t szExeName[MAX_PATH];
 
 	::GetModuleFileName(NULL, szExeName, MAX_PATH);	
+	::SetConsoleCtrlHandler(HandlerRoutine, TRUE);
 
 	if (cl.HasSwitch("server")) {
 		printf("Server mode.\n");
@@ -190,7 +213,12 @@ int _tmain(int argc, _TCHAR* argv[])
 	printf("Press enter to exit.\n");
 
 	//_getch();
-	base::MessageLoop::current()->Run();
+	//base::MessageLoop::current()->PostTask(FROM_HERE, 
+	//									   base::Bind(&WaitEndEvent));
+	
+	mainLoop.Run();
+	printf("quit\n");
+	//run_loop.Run();
 
 	client_srv_thread.Stop();
 

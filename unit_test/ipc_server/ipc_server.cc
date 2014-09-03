@@ -71,6 +71,7 @@ void main()
 	base::AtExitManager exit_manager;
 	SimpleListener clientListener;
 	base::MessageLoopForIO main_message_loop;
+	
 
 	std::cout << "Client: Creating IPC channel " << kFuzzerChannel << std::endl;
 	//IPC::Channel clientChannel(kFuzzerChannel, IPC::Channel::MODE_SERVER, &clientListener);
@@ -90,4 +91,5 @@ void main()
 
 	std::cout << "Starting the MessageLoop" << std::endl;
 	base::MessageLoop::current()->Run();
+	
 }
