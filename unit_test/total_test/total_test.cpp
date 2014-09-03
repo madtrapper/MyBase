@@ -17,7 +17,7 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_listener.h"
-#include "ipc_test_msg.h"
+#include "SrvWorker.h"
 
 
 static base::AtExitManager exit_manager;
@@ -40,9 +40,9 @@ bool launch_child_process(const wchar_t* cmd)
 	return bRet;
 }
 
-class SrvWorker : public IPC::Listener {
+class SrvWorkerOld : public IPC::Listener {
 public:
-	SrvWorker() : other_(NULL) {}
+	SrvWorkerOld() : other_(NULL) {}
 	void Init(IPC::Sender* s) {
 		other_ = s;
 	}
@@ -94,7 +94,7 @@ public:
 };
 
 MsgThread client_srv_thread;
-SrvWorker serverListener;
+SrvWorkerOld serverListener;
 scoped_ptr<IPC::SyncChannel> serverChannel;
 
 base::WaitableEvent* wEvent_;
@@ -138,6 +138,7 @@ void runas_client() {
 	
 	clientChannel.release();
 	clientListener.Init(static_cast<IPC::Sender*>(clientChannel.get()));
+	client_srv_thread.message_loop()->Run();
 }
 void shit() {
 	mainLoop.QuitWhenIdle();
@@ -156,12 +157,68 @@ BOOL WINAPI HandlerRoutine(_In_  DWORD dwCtrlType) {
 	return TRUE;
 }
 
+void ScanDir(base::FilePath* dst) {
+	
+	if (!dst)
+		return;
+	base::FileEnumerator scan_enum(*dst,
+		true,
+		base::FileEnumerator::FILES,
+		FILE_PATH_LITERAL("*.*"));
+	int total_file_count = 0;
+	for (base::FilePath name = scan_enum.Next();
+		!name.empty();
+		name = scan_enum.Next(), total_file_count++) {
+		_tprintf(L"File : %s\n", name.AsUTF16Unsafe().c_str());
+	}
+
+	printf("Total : %d\n", total_file_count);
+	base::MessageLoop::current()->QuitWhenIdle();
+}
+
+class SimpleClient : public SrvWorker {
+public:
+	SimpleClient() : SrvWorker(IPC::Channel::MODE_CLIENT, "simple_client") { }
+
+	virtual void OnAnswer(int* answer) OVERRIDE{
+		*answer = 42;
+		Done();
+	}
+};
+
+class SimpleServer : public SrvWorker {
+public:
+	explicit SimpleServer(bool pump_during_send)
+		: SrvWorker(IPC::Channel::MODE_SERVER, "simpler_server"),
+		pump_during_send_(pump_during_send) { }
+	virtual void Run() OVERRIDE{
+		SendAnswerToLife(pump_during_send_, true);
+		//Done();
+	}
+
+	bool pump_during_send_;
+};
+
+SimpleServer* server;
+SimpleClient* client;
+void runas_server2() {
+	server = new SimpleServer(true);
+
+	server->Start();
+	server->WaitForChannelCreation();
+}
+
+void runas_client2() {
+	client = new SimpleClient();
+	client->Start();
+}
 
 int _tmain(int argc, _TCHAR* argv[])
 {
 	CommandLine cl(argc, argv);
 	
 	base::FilePath exePath;
+	base::FilePath scan_dir;
 	wchar_t szExeName[MAX_PATH];
 
 	::GetModuleFileName(NULL, szExeName, MAX_PATH);	
@@ -174,6 +231,10 @@ int _tmain(int argc, _TCHAR* argv[])
 		base::LaunchOptions options;
 		CommandLine client_cl = CommandLine::FromString(szExeName);
 
+		//runas_server();
+
+		runas_server2();
+
 		client_cl.AppendSwitch("--client");
 		CommandLine::StringType s = client_cl.GetCommandLineString();
 		//options.as_user = token;
@@ -183,28 +244,15 @@ int _tmain(int argc, _TCHAR* argv[])
 			launch_child_process(s.c_str());
 		}
 
-		base::FilePath scan_dir = cl.GetSwitchValuePath("d");
+		scan_dir = cl.GetSwitchValuePath("d");
 		_tprintf(L"Target : %s\n", scan_dir.AsUTF16Unsafe().c_str());
 
-		base::FileEnumerator scan_enum(scan_dir, 
-									   true, 
-									   base::FileEnumerator::FILES,
-									   FILE_PATH_LITERAL("*.*"));
-		int total_file_count = 0;
-		for (base::FilePath name = scan_enum.Next(); 
-			!name.empty(); 
-			name = scan_enum.Next(), total_file_count++) {
-			_tprintf(L"File : %s\n", name.AsUTF16Unsafe().c_str());
-		}
-
-		printf("Total : %d\n", total_file_count);
-
-		runas_server();
-
+		mainLoop.PostTask(FROM_HERE, base::Bind(&ScanDir, &scan_dir));
+		
 	}
 	else if (cl.HasSwitch("client")) {		
 		printf("Client mode.\n");
-		runas_client();
+		runas_client2();
 	}
 	else {
 		printf("cmd error\n");
@@ -216,10 +264,10 @@ int _tmain(int argc, _TCHAR* argv[])
 	//base::MessageLoop::current()->PostTask(FROM_HERE, 
 	//									   base::Bind(&WaitEndEvent));
 	
-	mainLoop.Run();
+	//mainLoop.Run();
 	printf("quit\n");
 	//run_loop.Run();
-
+	_getch();
 	client_srv_thread.Stop();
 
 	return 0;

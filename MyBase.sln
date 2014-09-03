@@ -37,6 +37,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "my_simple_thread", "unit_te
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "total_test", "unit_test\total_test\total_test.vcxproj", "{064E6642-3833-4779-ADFB-1B7812AC78B3}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ipc_sync_channel_unittest", "unit_test\ipc_sync_channel_unittest\ipc_sync_channel_unittest.vcxproj", "{A4DA8C95-3A21-47C0-97BB-EF88DCCA0856}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -163,6 +165,12 @@ Global
 		{064E6642-3833-4779-ADFB-1B7812AC78B3}.Release|Win32.ActiveCfg = Release|Win32
 		{064E6642-3833-4779-ADFB-1B7812AC78B3}.Release|Win32.Build.0 = Release|Win32
 		{064E6642-3833-4779-ADFB-1B7812AC78B3}.Release|x64.ActiveCfg = Release|Win32
+		{A4DA8C95-3A21-47C0-97BB-EF88DCCA0856}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A4DA8C95-3A21-47C0-97BB-EF88DCCA0856}.Debug|Win32.Build.0 = Debug|Win32
+		{A4DA8C95-3A21-47C0-97BB-EF88DCCA0856}.Debug|x64.ActiveCfg = Debug|Win32
+		{A4DA8C95-3A21-47C0-97BB-EF88DCCA0856}.Release|Win32.ActiveCfg = Release|Win32
+		{A4DA8C95-3A21-47C0-97BB-EF88DCCA0856}.Release|Win32.Build.0 = Release|Win32
+		{A4DA8C95-3A21-47C0-97BB-EF88DCCA0856}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -178,5 +186,6 @@ Global
 		{6B75EE99-C708-4DF5-AED9-20DA3D12B207} = {8A7B6455-6D58-45C4-BB70-F95BAE6585B1}
 		{D8EA9D24-037F-403D-B290-EA96ED55A2DF} = {8A7B6455-6D58-45C4-BB70-F95BAE6585B1}
 		{064E6642-3833-4779-ADFB-1B7812AC78B3} = {8A7B6455-6D58-45C4-BB70-F95BAE6585B1}
+		{A4DA8C95-3A21-47C0-97BB-EF88DCCA0856} = {8A7B6455-6D58-45C4-BB70-F95BAE6585B1}
 	EndGlobalSection
 EndGlobal

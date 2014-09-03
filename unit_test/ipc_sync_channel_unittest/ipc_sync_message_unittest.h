@@ -1,3 +1,7 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #include <string>
 
 #include "ipc/ipc_message_macros.h"
@@ -7,14 +11,14 @@
 IPC_SYNC_MESSAGE_CONTROL0_0(SyncChannelTestMsg_NoArgs)
 
 IPC_SYNC_MESSAGE_CONTROL0_1(SyncChannelTestMsg_AnswerToLife,
-int /* answer */)
+                            int /* answer */)
 
 IPC_SYNC_MESSAGE_CONTROL1_1(SyncChannelTestMsg_Double,
-int /* in */,
-int /* out */)
+                            int /* in */,
+                            int /* out */)
 
 IPC_SYNC_MESSAGE_CONTROL0_1(SyncChannelNestedTestMsg_String,
-std::string)
+                            std::string)
 
 // out1 is false
 IPC_SYNC_MESSAGE_CONTROL0_1(Msg_C_0_1, bool)
@@ -53,12 +57,12 @@ IPC_SYNC_MESSAGE_CONTROL3_2(Msg_C_3_2, std::string, bool, int, bool, int)
 // in1 must be 3, in2 must be "3_3", in3 must be true, out1 is "3_3", out2 is
 // 33, out3 is false
 IPC_SYNC_MESSAGE_CONTROL3_3(Msg_C_3_3, int, std::string, bool, std::string,
-int, bool)
+                            int, bool)
 
 // in1 must be true, in2 must be 3, in3 must be "3_4", out1 is 34, out2 is
 // true, out3 is "3_4", out3 is false
 IPC_SYNC_MESSAGE_CONTROL3_4(Msg_C_3_4, bool, int, std::string, int, bool,
-std::string, bool)
+                            std::string, bool)
 
 // NOTE: routed messages are just a copy of the above...
 
@@ -99,12 +103,12 @@ IPC_SYNC_MESSAGE_ROUTED3_2(Msg_R_3_2, std::string, bool, int, bool, int)
 // in1 must be 3, in2 must be "3_3", in3 must be true, out1 is "3_3", out2 is
 // 33, out3 is false
 IPC_SYNC_MESSAGE_ROUTED3_3(Msg_R_3_3, int, std::string, bool, std::string,
-int, bool)
+                           int, bool)
 
 // in1 must be true, in2 must be 3, in3 must be "3_4", out1 is 34, out2 is
 // true, out3 is "3_4", out4 is false
 IPC_SYNC_MESSAGE_ROUTED3_4(Msg_R_3_4, bool, int, std::string, int, bool,
-std::string, bool)
+                           std::string, bool)
 
 IPC_MESSAGE_CONTROL1(SyncChannelTestMsg_Ping, int)
 IPC_SYNC_MESSAGE_CONTROL1_1(SyncChannelTestMsg_PingTTL, int, int)

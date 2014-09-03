@@ -9,6 +9,7 @@
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="ipc_test_msg.h" />
+    <ClInclude Include="SrvWorker.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="total_test.cpp" />
