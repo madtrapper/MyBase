@@ -8,6 +8,7 @@
 *.obj
 *.tlog
 *.user
+*.ipch
 Debug_temp/
 Release_temp/
 x64/
