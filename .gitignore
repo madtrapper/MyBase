@@ -9,6 +9,7 @@
 *.tlog
 *.user
 *.ipch
+/ipch/
 Debug_temp/
 Release_temp/
 x64/
