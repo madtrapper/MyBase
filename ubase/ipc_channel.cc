@@ -14,8 +14,14 @@ bool Channel::InitChannel() {
 			                0, NULL, OPEN_EXISTING,
 			                SECURITY_SQOS_PRESENT | SECURITY_IDENTIFICATION | FILE_FLAG_OVERLAPPED | FILE_FLAG_NO_BUFFERING,
 							NULL);
-		if (hPipe_ != INVALID_HANDLE_VALUE)
+		if (hPipe_ != INVALID_HANDLE_VALUE) {
+			pipeStatus_ = PIPE_CONNECTED;
 			bRet = true;
+			printf("Connected with server\n");
+		}
+		else {
+			printf("Connect fail\n");
+		}
 	}
 	else { //Server mode
 		hPipe_ = CreateNamedPipe(channelName_.c_str(),
@@ -24,71 +30,186 @@ bool Channel::InitChannel() {
 								 1,
 								 PIPE_READ_BUFFER_SIZE,
 								 PIPE_READ_BUFFER_SIZE,
-								 5000 * 10,
+								 1000 * 5,
 								 NULL);
 		
 		if (hPipe_ != INVALID_HANDLE_VALUE) {
 			bRet = true;
-			IocpStart();
-			CreateIoCompletionPort(hPipe_, iocp_.h_iocp, 0, 0);
-			overLap_[CONNECT].hPipe = hPipe_;
-			overLap_[CONNECT].pChannel = this;
-			BOOL bRes = ConnectNamedPipe(overLap_[CONNECT].hPipe, (LPOVERLAPPED)&overLap_[CONNECT]);
+			BOOL fConnected = ConnectNamedPipe(hPipe_, &pipe_overlap_.overLap);
+			if (fConnected) {
+				pipeStatus_ = PIPE_CONNECTED;
+				printf("Pipe connected.\n");
+				return bRet;
+			}
+			switch (GetLastError()) {
+			case ERROR_IO_PENDING:
+				pipeStatus_ = PIPE_WAIT_FOR_CONNECT;
+				printf("Wait for connected...\n");
+				break;
+			case ERROR_PIPE_CONNECTED:
+				pipeStatus_ = PIPE_DISCONNECTED;
+				bRet = false;
+				printf("Pipe err disconnected...\n");
+				break;
+			default:
+				pipeStatus_ = PIPE_DISCONNECTED;
+				bRet = false;
+				printf("Pipe error:%d\n", GetLastError());
+			}
+
+			if (pipeStatus_ == PIPE_WAIT_FOR_CONNECT) {
+				DWORD cbRet = 0;
+				/*
+				DWORD dwWait = WaitForSingleObject(overLap_.hEvent, 5000);
+
+				if (dwWait == WAIT_OBJECT_0) {
+					pipeStatus_ = PIPE_CONNECTED;
+					bRet = true;
+					printf("Pipe connected.\n");
+				}
+				else {
+					pipeStatus_ = PIPE_DISCONNECTED;
+					bRet = false;
+					printf("Pipe error:%d\n", GetLastError());
+				}
+				*/
+				
+				BOOL fSuccess = GetOverlappedResult(hPipe_, 
+													&pipe_overlap_.overLap,
+													&cbRet, 
+													TRUE);
+				if (fSuccess) {
+					pipeStatus_ = PIPE_CONNECTED;
+					bRet = true;
+					printf("Pipe connected.\n");
+				}
+				else {
+					pipeStatus_ = PIPE_DISCONNECTED;
+					bRet = false;
+					printf("Pipe error:%d\n", GetLastError());
+				}
+				
+			}
 		}
 	}
 
 	return bRet;
 }
 
-void Channel::IocpStart() {
-	iocp_.h_iocp = CreateIoCompletionPort(INVALID_HANDLE_VALUE, 0, 0, 0);
-	iocp_.threads_count = 2;
-	iocp_.h_threads = (HANDLE*)malloc(sizeof(HANDLE)* iocp_.threads_count);
-
-	for (size_t n = 0; n < iocp_.threads_count; ++n)
-		iocp_.h_threads[n] = (HANDLE)_beginthreadex(0, 0, iocp_proc, &iocp_, 0, 0);
+void WINAPI WriteCallback(DWORD dwError, DWORD cbTransferred, LPOVERLAPPED lpo)
+{
+	PIPE_OVERLAP* pPipeOverlap = (PIPE_OVERLAP*)lpo;
+	if (pPipeOverlap) {
+		pPipeOverlap->byteTransfered = cbTransferred;
+		SetEvent(pPipeOverlap->hEvent);
+	}
 }
 
-void Channel::IocpCompletedRoutine(DWORD dwNumberOfBytesTransferred,
-								   ULONG_PTR lpCompletionKey,
-								   LPOVERLAPPED pOverlapped) {
-
-	LPPIPEOVERLAPPED p = (LPPIPEOVERLAPPED)pOverlapped;
-	BOOL bRet;
-	if (p && p->hPipe == p->pChannel->overLap_[CONNECT].hPipe) {
-		printf("Pipe connected.\n");
-		DisconnectNamedPipe(p->hPipe);
-		bRet = ConnectNamedPipe(p->hPipe, (LPOVERLAPPED)p);
+BOOL Channel::Send(const char* buf, int len, int timeout) 
+{
+	BOOL bRet = FALSE;
+	DWORD dwWrite = 0;
+	DWORD dwWait;
+	
+	if (pipeStatus_ != PIPE_CONNECTED || !buf || !len) { 
+		return bRet;
 	}
 
-}
+	ResetEvent(pipe_overlap_.hEvent);
 
-unsigned WINAPI Channel::iocp_proc(void *p)  {
-	iocp_info *iocp = (iocp_info*)p;
-	while (true) {
-		DWORD dwNumberOfBytesTransferred = 0;
-		ULONG_PTR lpCompletionKey = 0;
-		LPOVERLAPPED pOverlapped = NULL;
-		BOOL bRet = GetQueuedCompletionStatus(iocp->h_iocp,
-											  &dwNumberOfBytesTransferred,
-											  &lpCompletionKey,
-											  &pOverlapped,
-											  INFINITE);
-		if (!bRet) {
-			DWORD err = GetLastError();
-			
-			if (err == 64) {
-				//
-			}
-		}
-		if (NULL == lpCompletionKey && NULL == pOverlapped) {
-			PostQueuedCompletionStatus(iocp->h_iocp, 0, 0, 0);
-			break;
-		}
+	bRet = WriteFileEx(hPipe_, buf, len, (LPOVERLAPPED)&pipe_overlap_, &WriteCallback);
 
-		IocpCompletedRoutine(dwNumberOfBytesTransferred, lpCompletionKey, pOverlapped);
+	if (bRet) {
+		dwWait = WaitForSingleObjectEx(pipe_overlap_.hEvent, timeout, TRUE);
+		if (dwWait == WAIT_OBJECT_0 ||
+			dwWait == WAIT_IO_COMPLETION) {
+			bRet = TRUE;
+		}
+		else {
+			bRet = FALSE;
+		}
+		return bRet;
 	}
-	return 0;
+
+	DWORD err = GetLastError();
+
+	if (ERROR_BROKEN_PIPE == err) {
+		pipeStatus_ = PIPE_DISCONNECTED;
+		bRet = FALSE;
+		return bRet;
+	}
+
+	if (ERROR_IO_PENDING == GetLastError()) {
+		dwWait = WaitForSingleObjectEx(pipe_overlap_.hEvent, timeout, TRUE);
+		if (dwWait == WAIT_OBJECT_0 ||
+			dwWait == WAIT_IO_COMPLETION) {
+			bRet = TRUE;
+		}
+		else {
+			bRet = FALSE;
+		}
+	}
+
+	return bRet;
 }
+
+void WINAPI ReadCallback(DWORD dwError, DWORD cbTransferred, LPOVERLAPPED lpo)
+{
+	PIPE_OVERLAP* pPipeOverlap = (PIPE_OVERLAP*)lpo;
+	if (pPipeOverlap) {
+		pPipeOverlap->byteTransfered = cbTransferred;
+		SetEvent(pPipeOverlap->hEvent);
+	}
+}
+
+BOOL Channel::Read(char* buf, int len, int* out_len, int timeout)
+{
+	BOOL bRet = FALSE;
+	DWORD dwRead = 0;
+	DWORD dwWait;
+
+	if (pipeStatus_ != PIPE_CONNECTED) {
+		return bRet;
+	}
+	ResetEvent(pipe_overlap_.hEvent);
+	bRet = ReadFileEx(hPipe_, buf, len, (LPOVERLAPPED)&pipe_overlap_, &ReadCallback);
+	
+	if (bRet) {
+		dwWait = WaitForSingleObjectEx(pipe_overlap_.hEvent, timeout, TRUE);
+		if (dwWait == WAIT_OBJECT_0 ||
+			dwWait == WAIT_IO_COMPLETION) {
+			*out_len = pipe_overlap_.byteTransfered;
+			bRet = TRUE;
+		}
+		else {
+			bRet = FALSE;
+		}
+		return bRet;
+	}
+
+	DWORD err = GetLastError();
+
+	if (ERROR_BROKEN_PIPE == err) {
+		pipeStatus_ = PIPE_DISCONNECTED;
+		bRet = FALSE;
+		return bRet;
+	}
+
+	if (ERROR_IO_PENDING == GetLastError()) {
+		dwWait = WaitForSingleObjectEx(pipe_overlap_.hEvent, timeout, TRUE);
+		if (dwWait == WAIT_OBJECT_0 ||
+			dwWait == WAIT_IO_COMPLETION) {
+			bRet = TRUE;
+			*out_len = pipe_overlap_.byteTransfered;
+		}
+		else {
+			bRet = FALSE;
+		}		
+	}
+
+
+	return bRet;
+}
+
 
 } // End of Namespace

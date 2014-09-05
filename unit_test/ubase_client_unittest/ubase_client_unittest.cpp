@@ -7,36 +7,39 @@
 #include <string>
 #include <Windows.h>
 
+#include <ubase/ipc_channel.h>
+
+IPC::Channel clientChannel(L"Test1", IPC::Channel::MODE_CLIENT);
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	std::wstring strName = L"\\\\.\\pipe\\Test1";
-	HANDLE 	_hServerPipe = CreateFile(strName.c_str(),
-		GENERIC_READ | GENERIC_WRITE,
-		0, NULL, OPEN_EXISTING,
-		SECURITY_SQOS_PRESENT | SECURITY_IDENTIFICATION | FILE_FLAG_OVERLAPPED | FILE_FLAG_NO_BUFFERING,
-		NULL);
+	char buf[1024*64] = { 0 };
+	clientChannel.InitChannel();
 
-	if (_hServerPipe == INVALID_HANDLE_VALUE) {
-		DWORD dwErr = GetLastError();
-		printf("Open pipe error: %d.\n", dwErr);
-		if (ERROR_PIPE_BUSY == dwErr) {
-			printf("1\n");
-			if (!WaitNamedPipe(strName.c_str(), 2000)) {
-				printf("Still busy.\n");
+	for (int i = 0; i < 1000000; i++) {
+		//sprintf_s(buf, "%d", i);
+		if (!clientChannel.Send(buf, sizeof(buf), 1000))
+			printf("Pipe Write Error.\n");
+		
+		memset(buf, 0, sizeof(buf));
+		int outLen;
+		if (!clientChannel.Read(buf, sizeof(buf), &outLen, 1000)) {
+			printf("Pipe Read Error.\n");
+		}
+		else {
+			if (outLen != sizeof(buf))
+				printf("Outlen :%d\n");
+			/*
+			if (0 == strlen(buf)) {
+				printf("Nothing in buf\n");
 			}
-			else {
-				printf("ok.\n");
-			}
+			*/
+			//printf("Buf:%s \n", buf);			
 		}
 	}
-	else {
-		printf("Open pipe success.\n");
-	}
-
+	
+	printf("Done.\n");
 	_getch();
-
-	CloseHandle(_hServerPipe);
 
 	return 0;
 }

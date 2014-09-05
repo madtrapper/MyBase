@@ -9,6 +9,13 @@ namespace IPC {
 //
 #define PIPE_READ_BUFFER_SIZE	(4 * 1024)
 //
+typedef struct _PIPE_OVERLAP {
+	OVERLAPPED overLap;
+	HANDLE hEvent;
+	char buf[1024 * 32];
+	int byteTransfered;
+}PIPE_OVERLAP;
+
 class ChannelEvtDelegate
 {
 public:
@@ -35,46 +42,39 @@ public:
 		CONNECT
 	};
 
+	enum PIPE_STATUS {
+		PIPE_WAIT_FOR_CONNECT,
+		PIPE_CONNECTED,
+		PIPE_DISCONNECTED
+	};
+
 	Channel(const std::wstring &name, Channel::Mode mode)
 		: channelMode_(mode),
-		  hPipe_(NULL){
+		  hPipe_(NULL),
+		  pipeStatus_(PIPE_DISCONNECTED) {
 		channelName_ = L"\\\\.\\pipe\\" + name;
-		memset(&overLap_, 0, sizeof(overLap_));
+		memset(&pipe_overlap_, 0, sizeof(pipe_overlap_));
+		//memset(&overLap_, 0, sizeof(overLap_));
+		pipe_overlap_.overLap.hEvent = CreateEvent(NULL, TRUE, TRUE, NULL);
+		pipe_overlap_.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 	}
 
 	virtual ~Channel() {}
 
 	bool InitChannel();
-	void IocpStart();
+	void CloseChannel();
 
-	
+	BOOL Send(const char* buf, int len, int timeout);
+	BOOL Read(char* buf, int len, int* out_len, int timeout);
 
 protected:
 	std::wstring channelName_;
 	Mode channelMode_;
 	HANDLE hPipe_;
-	ChannelEvtDelegate* delegate;
+	PIPE_STATUS pipeStatus_;
+	ChannelEvtDelegate* delegate_;
 
-	struct iocp_info {
-		HANDLE h_iocp;
-		size_t threads_count;
-		HANDLE *h_threads;
-	};
-
-	iocp_info iocp_;
-
-	typedef struct _PipeOVERLAPPED{
-		OVERLAPPED	over;
-		HANDLE		hPipe;
-		Channel*	pChannel;
-	}PIPEOVERLAPPED, *LPPIPEOVERLAPPED;
-
-	PIPEOVERLAPPED overLap_[3];		// Connect, Read, Write
-
-	static unsigned WINAPI iocp_proc(void *p);
-	static void IocpCompletedRoutine(DWORD dwNumberOfBytesTransferred, 
-							         ULONG_PTR lpCompletionKey, 
-							         LPOVERLAPPED pOverlapped);
+	PIPE_OVERLAP pipe_overlap_;
 
 	DISALLOW_COPY_AND_ASSIGN(Channel);
 };

@@ -89,6 +89,11 @@
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="ubase_client_unittest.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\ubase\ubase.vcxproj">
+      <Project>{c014121f-5a02-40b8-9625-60e2d7b08dd2}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
